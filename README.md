@@ -7,7 +7,7 @@ Biggest issue here is that Node.Js is single threaded. It would be a perfect sol
 
 When I have the motivation I'll publish it. 
 
-## Why is voice recording with Discord.Js such a big pain?
+## Why is voice recording with discord.js such a big pain?
 Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
 Problems are
 1. We don't have a single track for a voice channel. Each user has its own stream.
