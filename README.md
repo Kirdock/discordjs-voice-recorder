@@ -23,6 +23,10 @@ The more users are speaking and the less powerful the system is that runs the bo
 - SAMPLE_RATE: Target sample rate of the recorded stream. Default 16,000.
 - CHANNEL_COUNT: Target channel count of the recorded stream. Default 2.
 
+## How to use
+Just create a `VoiceRecorder` instance with `new VoiceRecorder()`.
+To start the record buffer, simply call `voiceRecorder.startRecording(yourVoiceConnection)`.
+
 
 ## Overview for calculation of skip time and delay time
 ```
