@@ -3,7 +3,7 @@ Voice recorder or more like a replay buffer for discord.js. Base functionality i
 The output format can be determined to just be a single `.wav` file or a `.mkv` file that contains the full audio track and one audio track for each user. 
 
 It's experimental and there may be some bugs.
-Biggest issue here is that Node.Js is single threaded. It would be a perfect solution if each user stream is tracked in its own thread.
+Biggest issue here is that Node.js is single threaded. It would be a perfect solution if each user stream is tracked in its own thread.
 
 When I have the motivation I'll publish it. 
 
@@ -51,7 +51,8 @@ startRecordTime = endTime - (minutes /*record last x minutes*/) * 60 * 1000;
  skipTime = startRecordTime - userStartTime   // valid if > 0
 
 each delay when user is silent:
-startTimeOfChunk = Date.now() - chunkTime;
-silentTimeMs = endDateOfLatestChunk - startTimeOfChunk - 40 // tolerance of 40ms
-split into chunks with same length. Overflow will be incremented and used for next chunk.
+  startTimeOfChunk = Date.now() - chunkTime;
+  silentTimeMs = endDateOfLatestChunk - startTimeOfChunk - 40 // tolerance of 40ms. Node is single-threaded and other tasks distort it
+  
+  split into chunks with same length. Overflow will be incremented and used for next chunk.
 ```
