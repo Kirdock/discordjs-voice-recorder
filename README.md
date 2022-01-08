@@ -49,4 +49,9 @@ startRecordTime = endTime - (minutes /*record last x minutes*/) * 60 * 1000;
 
  delayTime = userStartTime - startRecordTime  // valid if > 0
  skipTime = startRecordTime - userStartTime   // valid if > 0
+
+each delay when user is silent:
+startTimeOfChunk = Date.now() - chunkTime;
+silentTimeMs = endDateOfLatestChunk - startTimeOfChunk - 40 // tolerance of 40ms
+split into chunks with same length. Overflow will be incremented and used for next chunk.
 ```
