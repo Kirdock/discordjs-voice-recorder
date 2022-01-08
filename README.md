@@ -40,6 +40,8 @@ voiceRecorder.stopRecording(myVoiceConnection);
 
 ## Overview for calculation of skip time and delay time
 ```
+startRecordTime = endTime - (minutes /*record last x minutes*/) * 60 * 1000;
+
 ------|----------------------|----------------|-------------------------------|-------
 ------|----------------------|----------------|-------------------------------|-------
      user1 Start      startRecordTime    user2 Start                        endTime
