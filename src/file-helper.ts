@@ -3,15 +3,15 @@ import { existsSync, mkdirSync } from 'fs';
 import { unlink } from 'fs/promises';
 
 export class FileHelper {
-    public static readonly rootDir = __dirname;
-    public static readonly baseDir = join(FileHelper.rootDir, '/sounds');
+    public readonly baseDir: string;
 
-    constructor() {
+    constructor(directory?: string) {
+        this.baseDir = directory ?? join(__dirname, '/sounds');
         this.checkAndCreateFolderSystem();
     }
 
     private checkAndCreateFolderSystem() {
-        for (const folder of [FileHelper.baseDir]) {
+        for (const folder of [this.baseDir]) {
             this.checkAndCreateFolder(folder);
         }
     }

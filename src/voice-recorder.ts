@@ -5,7 +5,7 @@ import { join } from 'path';
 import { FileHelper } from './file-helper';
 import { FileWriter } from 'wav';
 import { ReplayReadable } from './replay-readable';
-import { AudioExportType } from '../models/types';
+import { AudioExportType, RecordOptions } from '../models/types';
 
 interface UserStreams {
     [userId: string]: {
@@ -16,62 +16,60 @@ interface UserStreams {
 
 export class VoiceRecorder {
     private readonly fileHelper: FileHelper;
-    private readonly maxRecordTimeMs: number;
-    private readonly channelCount: number;
-    private readonly sampleRate: number;
-    private readonly maxUserRecordingLength: number;
+    private readonly options: Omit<RecordOptions, 'recordDirectory'>;
     private writeStreams: {
-        [serverId: string]: {
+        [guildId: string]: {
             userStreams: UserStreams,
             listener: (userId: string) => void;
         }
     } = {};
 
-    constructor() {
-        this.fileHelper = new FileHelper();
-        this.maxUserRecordingLength = this.getNumber(process.env.MAX_USER_STREAM_MB,100) * 1_024 * 1_024;
-        this.maxRecordTimeMs = this.getNumber(process.env.MAX_RECORD_TIME_MINUTES,10) * 60 * 1_000;
-        this.sampleRate = this.getNumber(process.env.SAMPLE_RATE, 16_000);
-        this.channelCount = this.getNumber(process.env.CHANNEL_COUNT, 2);
+    constructor(options: Partial<RecordOptions> = {}) {
+        this.options = {
+            maxUserRecordingLength: (options.maxUserRecordingLength ?? 100) * 1_024 * 1_024,
+            maxRecordTimeMs: (options.maxRecordTimeMs ?? 10) * 60 * 1_000,
+            sampleRate: (options.sampleRate ?? 16_000),
+            channelCount: (options.channelCount ?? 2),
+        };
+        this.fileHelper = new FileHelper(options.recordDirectory);
     }
 
-    private getNumber(val: string | undefined, defaultValue = 0): number {
-        const result = parseInt(val ?? '', 10);
-        return result ? Math.abs(result) : defaultValue;
-    }
-
+    /**
+     * Starts listening to a given voice connection
+     * @param connection
+     */
     public startRecording(connection: VoiceConnection): void {
-        const serverId = connection.joinConfig.guildId;
-        if (!this.writeStreams[serverId]) {
+        const guildId = connection.joinConfig.guildId;
+        if (!this.writeStreams[guildId]) {
             const listener = (userId: string) => {
                 //check if already listening to user
-                if (!this.writeStreams[serverId].userStreams[userId]) {
-                    const out = new ReplayReadable(this.maxRecordTimeMs, this.sampleRate, this.channelCount, {highWaterMark: this.maxUserRecordingLength, length: this.maxUserRecordingLength});
+                if (!this.writeStreams[guildId].userStreams[userId]) {
+                    const out = new ReplayReadable(this.options.maxRecordTimeMs, this.options.sampleRate, this.options.channelCount, {highWaterMark: this.options.maxUserRecordingLength, length: this.options.maxUserRecordingLength});
                     const opusStream = connection.receiver.subscribe(userId, {
                         end: {
                             behavior: EndBehaviorType.AfterSilence,
-                            duration: this.maxRecordTimeMs,
+                            duration: this.options.maxRecordTimeMs,
                         },
                     }) as unknown as ReadStream;
 
 
                     opusStream.on('end', () => {
-                        delete this.writeStreams[serverId].userStreams[userId];
+                        delete this.writeStreams[guildId].userStreams[userId];
                     });
                     opusStream.on('error', (error: Error) => {
-                        console.error(error, 'Error while recording voice');
-                        delete this.writeStreams[serverId].userStreams[userId];
+                        console.error(error, `Error while recording voice of user ${userId}`);
+                        delete this.writeStreams[guildId].userStreams[userId];
                     });
 
                     opusStream.pipe(out);
 
-                    this.writeStreams[serverId].userStreams[userId] = {
+                    this.writeStreams[guildId].userStreams[userId] = {
                         source: opusStream,
                         out
                     };
                 }
             }
-            this.writeStreams[serverId] = {
+            this.writeStreams[guildId] = {
                 userStreams: {},
                 listener,
             };
@@ -79,9 +77,13 @@ export class VoiceRecorder {
         }
     }
 
+    /**
+     * Stops recording for a given voice connection
+     * @param connection
+     */
     public stopRecording(connection: VoiceConnection): void {
-        const serverId = connection.joinConfig.guildId;
-        const serverStreams = this.writeStreams[serverId];
+        const guildId = connection.joinConfig.guildId;
+        const serverStreams = this.writeStreams[guildId];
         connection.receiver.speaking.removeListener('start', serverStreams.listener);
 
         for (const userId in serverStreams.userStreams) {
@@ -89,30 +91,30 @@ export class VoiceRecorder {
             userStream.source.destroy();
             userStream.out.destroy();
         }
-        delete this.writeStreams[serverId];
+        delete this.writeStreams[guildId];
     }
 
     /**
-     *
-     * @param serverId id of the guild/server where the recording should be fetched
+     * Saves last x minutes of the recording
+     * @param guildId id of the guild/server where the recording should be fetched
      * @param exportType save file either as wav or mkv
      * @param minutes timeframe for the recording. X last minutes
      * @returns the path to the created file
      */
-    public async getRecordedVoice(serverId: string, exportType: AudioExportType = 'audio', minutes: number = 10): Promise<string | undefined> {
-        if (!this.writeStreams[serverId]) {
-            console.warn(`server with id ${serverId} does not have any streams`, 'Record voice');
+    public async getRecordedVoice(guildId: string, exportType: AudioExportType = 'audio', minutes: number = 10): Promise<string | undefined> {
+        if (!this.writeStreams[guildId]) {
+            console.warn(`server with id ${guildId} does not have any streams`, 'Record voice');
             return;
         }
-        const recordDurationMs = Math.min(Math.abs(minutes) * 60 * 1_000, this.maxRecordTimeMs)
+        const recordDurationMs = Math.min(Math.abs(minutes) * 60 * 1_000, this.options.maxRecordTimeMs)
         const endTime = Date.now();
         return new Promise(async (resolve, reject) => {
-            const minStartTime = this.getMinStartTime(serverId);
+            const minStartTime = this.getMinStartTime(guildId);
 
             if (minStartTime) {
-                const {command, createdFiles} = await this.getFfmpegSpecs(this.writeStreams[serverId].userStreams, minStartTime, endTime, recordDurationMs);
+                const {command, createdFiles} = await this.getFfmpegSpecs(this.writeStreams[guildId].userStreams, minStartTime, endTime, recordDurationMs);
                 if (createdFiles.length) {
-                    const resultPath = join(FileHelper.baseDir, `${endTime}.wav`);
+                    const resultPath = join(this.fileHelper.baseDir, `${endTime}.wav`);
                     command
                         .on('end', async () => {
                             let path;
@@ -141,7 +143,7 @@ export class VoiceRecorder {
         return new Promise((resolve, reject) => {
             let options = ffmpeg();
             const outputOptions: string[] = [];
-            const filePath = join(FileHelper.baseDir, `${endTime}.mkv`);
+            const filePath = join(this.fileHelper.baseDir, `${endTime}.mkv`);
             for (let i = 0; i < files.length; ++i) {
                 options = options.addInput(files[i]);
                 outputOptions.push(`-map ${i}`);
@@ -156,10 +158,10 @@ export class VoiceRecorder {
         })
     }
 
-    private getMinStartTime(serverId: string): number | undefined {
+    private getMinStartTime(guildId: string): number | undefined {
         let minStartTime: number | undefined;
-        for (const userId in this.writeStreams[serverId].userStreams) {
-            const startTime = this.writeStreams[serverId].userStreams[userId].out.startTime;
+        for (const userId in this.writeStreams[guildId].userStreams) {
+            const startTime = this.writeStreams[guildId].userStreams[userId].out.startTime;
 
             if (!minStartTime || (startTime < minStartTime)) {
                 minStartTime = startTime;
@@ -179,7 +181,7 @@ export class VoiceRecorder {
 
         for (const userId in streams) {
             const stream = streams[userId].out;
-            const filePath = join(FileHelper.baseDir, `${endTime}-${userId}.wav`);
+            const filePath = join(this.fileHelper.baseDir, `${endTime}-${userId}.wav`);
             try {
                 await this.saveFile(stream, filePath, startRecordTime, endTime);
                 ffmpegOptions = ffmpegOptions.addInput(filePath);
@@ -205,8 +207,8 @@ export class VoiceRecorder {
     private async saveFile(stream: ReplayReadable, filePath: string, startTime: number, endTime: number): Promise<void> {
         return new Promise((resolve, reject) => {
             const writeStream = new FileWriter(filePath, {
-                channels: this.channelCount,
-                sampleRate: this.sampleRate
+                channels: this.options.channelCount,
+                sampleRate: this.options.sampleRate
             });
 
             const readStream = stream.rewind(startTime, endTime);

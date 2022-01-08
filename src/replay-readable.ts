@@ -65,7 +65,7 @@ export class ReplayReadable extends Writable {
         // encoding is 'buffer'... whatever...
         const addTime = Date.now();
 
-        chunk = this.decodeChunk(chunk); // always 1280 bytes; 40 ms or 20 ms
+        chunk = this.decodeChunk(chunk); // always 1280 bytes; 40 ms or 20 ms for 16 kHz, 2 channels
         const startTimeOfChunk = this.getStartTimeOfChunk(chunk, addTime);
 
         const silentBuffers = this.getSilentBuffer(startTimeOfChunk);
