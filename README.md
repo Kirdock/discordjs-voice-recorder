@@ -17,6 +17,9 @@ Problems are
 
 The more users are speaking and the less powerful the system is that runs the bot the more incorrect will this solution be.
 
+## Requirements
+- `ffmpeg` has to be installed
+
 ## How to use
 
 ```ts
