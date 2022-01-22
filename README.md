@@ -1,11 +1,10 @@
-# Voice recorder for discord.js (Experimental)
+# Voice recorder for discord.js (merging of user streams included)
 Voice recorder or more like a replay buffer for discord.js. Base functionality is "save last x minutes".
 The output format can be determined to just be a single `.wav` file or a `.mkv` file that contains the full audio track and one audio track for each user. 
 
-It's experimental and there may be some bugs.
+Up to now I haven't found any bugs.
 Biggest issue here is that Node.js is single threaded. It would be a perfect solution if each user stream is tracked in its own thread.
-
-When I have the motivation I'll publish it. 
+So I guess this is the best possible solution for Node.js.
 
 ## Why is voice recording with discord.js such a big pain?
 Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
