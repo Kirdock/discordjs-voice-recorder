@@ -55,11 +55,11 @@ export class ReplayReadable extends Writable {
         }, 5_000); // check every 5 seconds if some chunks timed out
     }
 
-    public get startTimeOfNextChunk(): undefined | number {
+    private get startTimeOfNextChunk(): undefined | number {
         return this._startTimeOfNextChunk;
     }
 
-    public set startTimeOfNextChunk(time: number | undefined) {
+    private set startTimeOfNextChunk(time: number | undefined) {
         if (this._startTimeOfChunkBefore && time) {
             syncStream(this._bufArr, this._startTimeOfChunkBefore, time, this.encodingOptions)
         }
