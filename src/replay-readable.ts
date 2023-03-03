@@ -24,15 +24,14 @@ export class ReplayReadable extends Writable {
      * @param getUserSpeakingTime
      * @param options
      */
+    // @ts-ignore ignore that super() has to be called at the very top
     constructor(lifeTimeMs: number, sampleRate: number, numChannels: number, private getUserSpeakingTime: () => number | undefined, options?: ReadWriteOptions) {
-        super();
         const adjustedOptions = Object.assign({
             length: 1048576, // 2^20 = 1 MB
             highWaterMark: 32,
             dropInterval: 1e3
         }, options) as WritableOptions & { length: number, highWaterMark: number, dropInterval: number };
         const chunkTimeMs = 20;
-
         super(adjustedOptions);
 
         this._readableOptions = adjustedOptions;
