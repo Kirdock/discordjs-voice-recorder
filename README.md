@@ -1,10 +1,6 @@
-# Voice recorder for discord.js (merging of user streams included)
+# Voice recorder for discord.js
 Voice recorder or more like a replay buffer for discord.js. Base functionality is "save last x minutes".
-The output format can be determined to just be a single `.wav` file or a `.mkv` file that contains the full audio track and one audio track for each user. 
-
-Up to now I haven't found any bugs.
-Biggest issue here is that Node.js is single threaded. It would be a perfect solution if each user stream is tracked in its own thread.
-So I guess this is the best possible solution for Node.js.
+The output format can be determined to just be a single `.mp3` file or a `.zip` file that contains one audio track per user.
 
 ## Why is voice recording with discord.js such a big pain?
 Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
@@ -14,10 +10,8 @@ Problems are
 
 => We have to manually sync the user streams and manually add the delays when a user is speaking.
 
-The more users are speaking and the less powerful the system is that runs the bot the more incorrect will this solution be.
-
 ## Requirements
-- `ffmpeg` has to be installed
+`ffmpeg` has to be installed
 
 ## How to use
 
@@ -29,8 +23,13 @@ const voiceRecorder = new VoiceRecorder();
 // start recording on a specific connection
 voiceRecorder.startRecording(myVoiceConnection);
 
-// save last 5 minutes as .wav
-voiceRecorder.getRecordedVoice(guildId, 'audio', 5);
+// save last 5 minutes as .mp3
+await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'single', 5);
+// {yourWriteStream} can be any writeStream. E.g. response object of express or just fs.createWriteStream('myFile.mp3')
+
+// save last 5 minutes as .zip
+await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'separate', 5);
+// {yourWriteStream} can be any writeStream. E.g. response object of express or just fs.createWriteStream('myFile.zip')
 
 // stop recording on a specific connection
 voiceRecorder.stopRecording(myVoiceConnection);
@@ -51,7 +50,7 @@ startRecordTime = endTime - (minutes /*record last x minutes*/) * 60 * 1000;
 
 each delay when user is silent:
   startTimeOfChunk = Date.now() - chunkTime;
-  silentTimeMs = endDateOfLatestChunk - startTimeOfChunk - 40 // tolerance of 40ms. Node is single-threaded and other tasks distort it
+  silentTimeMs = endDateOfLatestChunk - startTimeOfChunk;
   
-  split into chunks with same length. Overflow will be incremented and used for next chunk.
+  split into chunks with same length.
 ```
