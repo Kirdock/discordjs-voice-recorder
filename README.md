@@ -11,7 +11,7 @@ Simply run `npm i @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/disco
 ## How to use
 
 ```ts
-import { VoiceRecorder } from './voice-recorder';
+import { VoiceRecorder } from '@kirdock/discordjs-voice-recorder';
 
 const voiceRecorder = new VoiceRecorder();
 
