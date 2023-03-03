@@ -60,3 +60,9 @@ export interface UserStreams {
         out: ReplayReadable,
     } | undefined;
 }
+
+export interface DiscordClientInterface {
+    users: {
+        fetch: (userId: string) => Promise<{username: string}>
+    }
+}

@@ -2,13 +2,13 @@ import { AudioReceiveStream, EndBehaviorType, VoiceConnection } from '@discordjs
 import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
 import { resolve } from 'path';
 import { ReplayReadable } from './replay-readable';
-import { AudioExportType, SocketServerConfig, UserStreams, RecordOptions, UserVolumesDict } from '../models/types';
+import { AudioExportType, SocketServerConfig, UserStreams, RecordOptions, UserVolumesDict, DiscordClientInterface } from '../models/types';
 import { PassThrough, Readable, Writable } from 'stream';
 import { Server } from 'net';
 import { randomUUID } from 'crypto';
 import archiver from 'archiver';
 import * as net from 'net';
-import { Client } from 'discord.js';
+
 
 export class VoiceRecorder {
     private readonly options: Omit<RecordOptions, 'recordDirectory'>;
@@ -25,7 +25,7 @@ export class VoiceRecorder {
      * @param options Record options
      * @param discordClient The client is used to translate the userId into the username. This is just important for .zip export. The filename contains the username, else it contains the userId
      */
-    constructor(options: Partial<RecordOptions> = {}, private discordClient?: Client) {
+    constructor(options: Partial<RecordOptions> = {}, private discordClient?: DiscordClientInterface) {
         this.options = {
             maxUserRecordingLength: (options.maxUserRecordingLength ?? 100) * 1_024 * 1_024,
             maxRecordTimeMs: (options.maxRecordTimeMs ?? 10) * 60 * 1_000,
@@ -192,7 +192,7 @@ export class VoiceRecorder {
     private async getUsername(userId: string): Promise<string> {
         if (this.discordClient) {
             try {
-                const {username} = await this.discordClient?.users.fetch(userId);
+                const { username } = await this.discordClient?.users.fetch(userId);
                 return username;
             } catch (error) {
                 console.error(`Username of userId: ${userId} can't be fetched!`, error);
