@@ -2,16 +2,11 @@
 Voice recorder or more like a replay buffer for discord.js. Base functionality is "save last x minutes".
 The output format can be determined to just be a single `.mp3` file or a `.zip` file that contains one audio track per user.
 
-## Why is voice recording with discord.js such a big pain?
-Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
-Problems are
-1. We don't have a single track for a voice channel. Each user has its own stream.
-2. We don't have the delay when a user stops and starts speaking again.
-
-=> We have to manually sync the user streams and manually add the delays when a user is speaking.
-
 ## Requirements
 `ffmpeg` has to be installed
+
+## How to install
+Simply run `npm i @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/discordjs-voice-recorder`
 
 ## How to use
 
@@ -34,6 +29,14 @@ await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'separate', 5);
 // stop recording on a specific connection
 voiceRecorder.stopRecording(myVoiceConnection);
 ```
+
+## Why is voice recording with discord.js such a big pain?
+Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
+Problems are
+1. We don't have a single track for a voice channel. Each user has its own stream.
+2. We don't have the delay when a user stops and starts speaking again.
+
+=> We have to manually sync the user streams and manually add the delays when a user is speaking.
 
 
 ## Overview for calculation of skip time and delay time
