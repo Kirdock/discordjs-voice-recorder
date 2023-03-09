@@ -1,24 +1,22 @@
 import { AudioReceiveStream, EndBehaviorType, VoiceConnection } from '@discordjs/voice';
-import ffmpeg, { FfmpegCommand } from 'fluent-ffmpeg';
+import ffmpeg, { FfmpegCommand, FilterSpecification } from 'fluent-ffmpeg';
 import { resolve } from 'path';
 import { ReplayReadable } from './replay-readable';
-import { AudioExportType, SocketServerConfig, UserStreams, RecordOptions, UserVolumesDict, DiscordClientInterface } from '../models/types';
+import { AudioExportType, DiscordClientInterface, RecordOptions, SocketServerConfig, UserStreams, UserVolumesDict } from '../models/types';
 import { PassThrough, Readable, Writable } from 'stream';
+import * as net from 'net';
 import { Server } from 'net';
 import { randomUUID } from 'crypto';
 import archiver from 'archiver';
-import * as net from 'net';
 
 
 export class VoiceRecorder {
-    private readonly options: Omit<RecordOptions, 'recordDirectory'>;
+    private readonly options: RecordOptions;
     private static readonly PCM_FORMAT = 's16le';
-    private writeStreams: {
-        [guildId: string]: {
-            userStreams: UserStreams,
-            listener: (userId: string) => void;
-        } | undefined
-    } = {};
+    private writeStreams: Record<string, {
+        userStreams: UserStreams,
+        listener: (userId: string) => void;
+    } | undefined> = {};
 
     /**
      *
@@ -30,8 +28,7 @@ export class VoiceRecorder {
             maxUserRecordingLength: (options.maxUserRecordingLength ?? 100) * 1_024 * 1_024,
             maxRecordTimeMs: (options.maxRecordTimeMs ?? 10) * 60 * 1_000,
             sampleRate: (options.sampleRate ?? 16_000),
-            channelCount: (options.channelCount ?? 2),
-            userVolumes: options.userVolumes ?? {},
+            channelCount: (options.channelCount ?? 2)
         };
     }
 
@@ -123,8 +120,9 @@ export class VoiceRecorder {
      * @param guildId Guild if of the server. Determines on which server the recording should be saved
      * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
      * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
+     * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
      */
-    public async getRecordedVoice<T extends Writable>(writeStream: T, guildId: string, exportType: AudioExportType = 'single', minutes: number = 10): Promise<boolean> {
+    public async getRecordedVoice<T extends Writable>(writeStream: T, guildId: string, exportType: AudioExportType = 'single', minutes = 10, userVolumes: UserVolumesDict = {}): Promise<boolean> {
         const serverStream = this.writeStreams[guildId];
         if (!serverStream) {
             console.warn(`server with id ${guildId} does not have any streams`, 'Record voice');
@@ -141,9 +139,8 @@ export class VoiceRecorder {
         const maxRecordTime = endTimeMs - recordDurationMs;
         const startRecordTime = Math.max(minStartTimeMs, maxRecordTime);
         const recordMethod = (exportType === 'single' ? this.generateMergedRecording : this.generateSplitRecording).bind(this);
-        const userVolumesOfServer = this.options.userVolumes[guildId];
 
-        return recordMethod(serverStream.userStreams, startRecordTime, endTimeMs, writeStream, userVolumesOfServer);
+        return recordMethod(serverStream.userStreams, startRecordTime, endTimeMs, writeStream, userVolumes);
     }
 
     private generateMergedRecording(userStreams: UserStreams, startRecordTime: number, endTime: number, writeStream: Writable, userVolumes?: UserVolumesDict): Promise<boolean> {
@@ -173,6 +170,7 @@ export class VoiceRecorder {
             return false;
         }
         for (const userId of userIds) {
+            //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const passThroughStream = this.getUserRecordingStream(userStreams[userId]!.out.rewind(startRecordTime, endTime), userId, userVolumes);
             const username = await this.getUsername(userId);
             archive.append(passThroughStream, {
@@ -192,7 +190,7 @@ export class VoiceRecorder {
     private async getUsername(userId: string): Promise<string> {
         if (this.discordClient) {
             try {
-                const { username } = await this.discordClient?.users.fetch(userId);
+                const { username } = await this.discordClient.users.fetch(userId);
                 return username;
             } catch (error) {
                 console.error(`Username of userId: ${userId} can't be fetched!`, error);
@@ -207,11 +205,11 @@ export class VoiceRecorder {
         ffmpeg(stream)
             .inputOptions(this.getRecordInputOptions())
             .audioFilters([
-                    {
-                        filter: 'volume',
-                        options: ((this.getUserVolume(userId, userVolumes)) / 100).toString(),
-                    }
-                ]
+                {
+                    filter: 'volume',
+                    options: ((this.getUserVolume(userId, userVolumes)) / 100).toString(),
+                }
+            ]
             )
             .outputFormat('mp3')
             .output(passThroughStream, {end: true})
@@ -228,6 +226,7 @@ export class VoiceRecorder {
         const userStreams: UserStreams = this.writeStreams[guildId]?.userStreams ?? {};
 
         for (const userId in userStreams) {
+            //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const startTime = userStreams[userId]!.out.startTimeMs;
 
             if (!minStartTime || (startTime < minStartTime)) {
@@ -239,14 +238,15 @@ export class VoiceRecorder {
 
     private getFfmpegSpecs(streams: UserStreams, startRecordTime: number, endTimeMs: number, userVolumesDict?: UserVolumesDict): { command: FfmpegCommand, openServers: Server[] } {
         let ffmpegOptions = ffmpeg();
-        let amixStrings = [];
-        const volumeFilter = [];
+        const amixStrings: string[] = [];
+        const volumeFilter: FilterSpecification[] = [];
         const openServers: Server[] = [];
 
         for (const userId in streams) {
+            //eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const stream = streams[userId]!.out;
             try {
-                const output: string = `[s${volumeFilter.length}]`;
+                const output = `[s${volumeFilter.length}]`;
                 const {server, url} = this.serveStream(stream, startRecordTime, endTimeMs);
 
                 ffmpegOptions = ffmpegOptions

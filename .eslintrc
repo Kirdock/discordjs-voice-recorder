@@ -1,0 +1,21 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "quotes": ["error", "single"],
+    "indent": ["error", 4],
+    "@typescript-eslint/no-unnecessary-condition": "error"
+  }
+}

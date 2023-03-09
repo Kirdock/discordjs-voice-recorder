@@ -1,8 +1,8 @@
 import { OpusEncoder } from '@discordjs/opus';
 import { Readable, Writable, WritableOptions } from 'stream';
 import { getChunkTimeMs, getLastStopTime, secondsToBuffer, syncStream } from '../utils/replay-readable.utils';
+import { BufferArrayElement, ChunkArrayItem, EncodingOptions, ReadWriteOptions } from '../models/types';
 import Timeout = NodeJS.Timeout;
-import { ChunkArrayItem, BufferArrayElement, EncodingOptions, ReadWriteOptions } from '../models/types';
 
 export class ReplayReadable extends Writable {
     private readonly _highWaterMark: number;
@@ -24,6 +24,7 @@ export class ReplayReadable extends Writable {
      * @param getUserSpeakingTime
      * @param options
      */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore ignore that super() has to be called at the very top
     constructor(lifeTimeMs: number, sampleRate: number, numChannels: number, private getUserSpeakingTime: () => number | undefined, options?: ReadWriteOptions) {
         const adjustedOptions = Object.assign({
@@ -31,22 +32,20 @@ export class ReplayReadable extends Writable {
             highWaterMark: 32,
             dropInterval: 1e3
         }, options) as WritableOptions & { length: number, highWaterMark: number, dropInterval: number };
-        const chunkTimeMs = 20;
         super(adjustedOptions);
 
+        const chunkTimeMs = 20;
+        const bytesPerElement = 2; // buffer is Uint8Array but the data inside is PCM 16-bit
         this._readableOptions = adjustedOptions;
-
-
         this._encoder = new OpusEncoder(sampleRate, numChannels);
         this.encodingOptions = {
             numChannels,
             sampleRate,
-            chunkSize: (chunkTimeMs / 1000) * sampleRate * numChannels * Uint8Array.BYTES_PER_ELEMENT * 2 // 20ms per chunk; I don't know why times 2 but without the time is not correct
+            chunkSize: (chunkTimeMs / 1000) * sampleRate * numChannels * Uint8Array.BYTES_PER_ELEMENT * bytesPerElement,
+            bytesPerElement,
         }
-
-        this._highWaterMark = adjustedOptions.highWaterMark ?? 32;
+        this._highWaterMark = adjustedOptions.highWaterMark;
         this._bufArrLength = adjustedOptions.length;
-
         this._bufArr = [];
         this._waiting = null;
         this.fadeOutInterval = setInterval(() => {
@@ -81,19 +80,20 @@ export class ReplayReadable extends Writable {
         // start time of the user in the speaking map is probably the real start time and not the time the chunk is received. So it's probably not startTime - chunkTime
         const addTime = this.getStartTimeOfNextChunk();
 
-        chunk = this.decodeChunk(chunk); // always 1280 bytes; 40 ms or 20 ms
+        chunk = this.decodeChunk(chunk); // always 1280 bytes; 20 ms
         const startTimeOfNewChunk = userJustBeganSpeaking ? addTime : getLastStopTime(this._bufArr) as number; // there must be an element because isCorrectStartTime is true before it starts recording
 
         this._bufArr.push({
             chunk,
             encoding,
             startTime: startTimeOfNewChunk,
-            stopTime: startTimeOfNewChunk + getChunkTimeMs(chunk, this.encodingOptions.sampleRate, this.encodingOptions.numChannels)
+            stopTime: startTimeOfNewChunk + getChunkTimeMs(chunk, this.encodingOptions.sampleRate, this.encodingOptions.numChannels, this.encodingOptions.bytesPerElement)
         });
         this.checkAndDrop(callback);
         this.emit('wrote');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _writev(chunks: Array<ChunkArrayItem>, callback: (error?: Error | null) => void) {
         this.emit('wrote');
     }

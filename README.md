@@ -26,6 +26,9 @@ await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'single', 5);
 await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'separate', 5);
 // {yourWriteStream} can be any writeStream. E.g. response object of express or just fs.createWriteStream('myFile.zip')
 
+// optionally you can provide a dict {[userId]: volume} to adjust the user volume of specific users
+await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'single', 5, {['1234567']: 80}); // 80%
+
 // stop recording on a specific connection
 voiceRecorder.stopRecording(myVoiceConnection);
 ```
