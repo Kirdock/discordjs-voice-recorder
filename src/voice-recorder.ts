@@ -1,8 +1,8 @@
-import { AudioReceiveStream, EndBehaviorType, VoiceConnection } from '@discordjs/voice';
+import { AudioReceiveStream, EndBehaviorType } from '@discordjs/voice';
 import ffmpeg, { FfmpegCommand, FilterSpecification } from 'fluent-ffmpeg';
 import { resolve } from 'path';
 import { ReplayReadable } from './replay-readable';
-import { AudioExportType, DiscordClientInterface, RecordOptions, SocketServerConfig, UserStreams, UserVolumesDict } from '../models/types';
+import { AudioExportType, DiscordClientInterface, RecordOptions, SocketServerConfig, UserStreams, UserVolumesDict, VoiceConnectionBasic } from '../models/types';
 import { PassThrough, Readable, Writable } from 'stream';
 import * as net from 'net';
 import { Server } from 'net';
@@ -32,7 +32,7 @@ export class VoiceRecorder {
         };
     }
 
-    public startRecording(connection: VoiceConnection): void {
+    public startRecording(connection: VoiceConnectionBasic): void {
         const guildId = connection.joinConfig.guildId;
         if (this.writeStreams[guildId]) {
             return;
@@ -52,7 +52,7 @@ export class VoiceRecorder {
         connection.receiver.speaking.on('start', listener);
     }
 
-    private startRecordStreamOfUser(guildId: string, userId: string, connection: VoiceConnection): void {
+    private startRecordStreamOfUser(guildId: string, userId: string, connection: VoiceConnectionBasic): void {
         const serverStream = this.writeStreams[guildId];
         if(!serverStream) {
             return;
@@ -86,7 +86,7 @@ export class VoiceRecorder {
      * Stops the voice recording for the specified voice connection
      * @param connection
      */
-    public stopRecording(connection: VoiceConnection): void {
+    public stopRecording(connection: VoiceConnectionBasic): void {
         const guildId = connection.joinConfig.guildId;
         const serverStreams = this.writeStreams[guildId];
         if(!serverStreams) {

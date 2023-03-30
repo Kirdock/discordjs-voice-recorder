@@ -1,6 +1,6 @@
 import { Server } from 'net';
 import { ReplayReadable } from '../src/replay-readable';
-import { AudioReceiveStream } from '@discordjs/voice';
+import { AudioReceiveStream, SpeakingMap, VoiceReceiver } from '@discordjs/voice';
 import { WritableOptions } from 'stream';
 
 export type ReadWriteOptions = { length?: number } & WritableOptions;
@@ -60,4 +60,14 @@ export interface DiscordClientInterface {
     users: {
         fetch: (userId: string) => Promise<{username: string}>
     }
+}
+
+export interface VoiceConnectionBasic {
+    receiver: {
+        speaking: SpeakingMap;
+        subscribe: VoiceReceiver['subscribe'];
+    };
+    joinConfig: {
+        guildId: string;
+    };
 }
