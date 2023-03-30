@@ -143,6 +143,46 @@ export class VoiceRecorder {
         return recordMethod(serverStream.userStreams, startRecordTime, endTimeMs, writeStream, userVolumes);
     }
 
+    /**
+     *
+     * @param guildId Guild if of the server. Determines on which server the recording should be saved
+     * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
+     * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
+     * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
+     */
+    public async getRecordedVoiceAsBuffer(guildId: string, exportType: AudioExportType = 'single', minutes = 10, userVolumes: UserVolumesDict = {}): Promise<Buffer> {
+        const bufferStream = new PassThrough();
+        const buffers: Buffer[] = [];
+        const bufferPromise = new Promise((resolve) => {
+            bufferStream.on('finish', resolve);
+            bufferStream.on('error', resolve);
+        });
+
+        bufferStream.on('data', (data) => {
+            buffers.push(data);
+        });
+
+        const result = await this.getRecordedVoice(bufferStream, guildId, exportType, minutes, userVolumes);
+        if(!result) {
+            return Buffer.from([]);
+        }
+        await bufferPromise;
+        return Buffer.concat(buffers);
+    }
+
+    /**
+     *
+     * @param guildId Guild if of the server. Determines on which server the recording should be saved
+     * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
+     * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
+     * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
+     */
+    public async getRecordedVoiceAsReadable(guildId: string, exportType: AudioExportType = 'single', minutes = 10, userVolumes: UserVolumesDict = {}): Promise<Readable> {
+        const passThrough = new PassThrough();
+        await this.getRecordedVoice(passThrough, guildId, exportType, minutes, userVolumes);
+        return passThrough;
+    }
+
     private generateMergedRecording(userStreams: UserStreams, startRecordTime: number, endTime: number, writeStream: Writable, userVolumes?: UserVolumesDict): Promise<boolean> {
         return new Promise((resolve, reject) => {
             const {command, openServers} = this.getFfmpegSpecs(userStreams, startRecordTime, endTime, userVolumes);
@@ -159,7 +199,7 @@ export class VoiceRecorder {
                     reject(error);
                 })
                 .outputFormat('mp3')
-                .pipe(writeStream, {end: true});
+                .writeToStream(writeStream, {end: true});
         });
     }
 
