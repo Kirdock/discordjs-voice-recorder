@@ -1,3 +1,6 @@
+# 1.0.2
+- I'm just testing something here.
+
 # 1.0.1
 - Feature: You can now export the recording as stream (`getRecordedVoiceAsReadable`).
 - Feature: You can now export the recording as buffer (`getRecordedVoiceAsBuffer`).
