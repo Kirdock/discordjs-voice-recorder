@@ -1,8 +1,8 @@
 {
   "name": "@kirdock/discordjs-voice-recorder",
-  "version": "1.0.0",
-  "main": "lib/index.js",
+  "version": "1.0.1",
   "license": "MIT",
+  "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "author": "Klaus Striessnig",
   "repository": {
@@ -10,28 +10,31 @@
     "url": "https://github.com/Kirdock/discordjs-voice-recorder.git"
   },
   "files": [
-    "./lib"
+    "/lib"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "lint:check": "eslint ./",
     "lint:fix": "eslint --fix ./"
   },
   "dependencies": {
-    "@discordjs/opus": "0.9.0",
-    "@discordjs/voice": "0.14.0",
     "archiver": "^5.3.1",
     "fluent-ffmpeg": "^2.1.2"
   },
   "devDependencies": {
     "@types/archiver": "^5.3.1",
     "@types/fluent-ffmpeg": "^2.1.20",
-    "@types/node": "^16.11.18",
+    "@types/node": "18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.7.0",
     "typescript": "^4.5.4"
+  },
+  "peerDependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "@discordjs/voice": "^0.16.0"
   }
 }

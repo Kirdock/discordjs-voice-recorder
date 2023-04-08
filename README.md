@@ -3,10 +3,15 @@ Voice recorder or more like a replay buffer for discord.js. Base functionality i
 The output format can be determined to just be a single `.mp3` file or a `.zip` file that contains one audio track per user.
 
 ## Requirements
-`ffmpeg` has to be installed
+- `ffmpeg` has to be installed
+- `@discordjs/opus` has to be installed. Run `npm install @discordjs/opus` or `yarn add @discordjs/opus` to install the dependency.
+
+**Disclaimer**
+
+I suggest not using Windows (or just use WSL). Reason: `@discordjs/opus` is cumbersome to install.
 
 ## How to install
-Simply run `npm i @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/discordjs-voice-recorder`
+Simply run `npm install @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/discordjs-voice-recorder`
 
 ## How to use
 
@@ -14,6 +19,8 @@ Simply run `npm i @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/disco
 import { VoiceRecorder } from '@kirdock/discordjs-voice-recorder';
 
 const voiceRecorder = new VoiceRecorder();
+// optionally provide your Discord client as second parameter in order to have ${username}.mp3 for .zip export rather than ${userId}.mp3
+
 
 // start recording on a specific connection
 voiceRecorder.startRecording(myVoiceConnection);

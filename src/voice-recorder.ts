@@ -117,7 +117,7 @@ export class VoiceRecorder {
     /**
      *
      * @param writeStream The write stream in that the mp3 or zip file has to be saved. e.g. the response object of express or simply fs.createWriteStream('myFile.mp3')
-     * @param guildId Guild if of the server. Determines on which server the recording should be saved
+     * @param guildId Guild id of the server. Determines on which server the recording should be saved
      * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
      * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
      * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
@@ -145,7 +145,7 @@ export class VoiceRecorder {
 
     /**
      *
-     * @param guildId Guild if of the server. Determines on which server the recording should be saved
+     * @param guildId Guild id of the server. Determines on which server the recording should be saved
      * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
      * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
      * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
@@ -172,7 +172,7 @@ export class VoiceRecorder {
 
     /**
      *
-     * @param guildId Guild if of the server. Determines on which server the recording should be saved
+     * @param guildId Guild id of the server. Determines on which server the recording should be saved
      * @param exportType Export type of the recording. Can either be 'single' => .mp3 or 'separate' => .zip
      * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
      * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
