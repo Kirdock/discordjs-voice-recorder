@@ -177,9 +177,9 @@ export class VoiceRecorder {
      * @param minutes Determines how many minutes (max is options.maxRecordTimeMs/1_000/60)
      * @param userVolumes User dict {[userId]: number} that determines the volume for a user. Default 100 per user (100%)
      */
-    public async getRecordedVoiceAsReadable(guildId: string, exportType: AudioExportType = 'single', minutes = 10, userVolumes: UserVolumesDict = {}): Promise<Readable> {
-        const passThrough = new PassThrough();
-        await this.getRecordedVoice(passThrough, guildId, exportType, minutes, userVolumes);
+    public getRecordedVoiceAsReadable(guildId: string, exportType: AudioExportType = 'single', minutes = 10, userVolumes: UserVolumesDict = {}): Readable {
+        const passThrough = new PassThrough({allowHalfOpen: true});
+        void this.getRecordedVoice(passThrough, guildId, exportType, minutes, userVolumes);
         return passThrough;
     }
 
@@ -222,7 +222,7 @@ export class VoiceRecorder {
             archive
                 .on('end', () => resolve(true))
                 .on('error', reject)
-                .pipe(writeStream);
+                .pipe(writeStream, {end: true});
             archive.finalize();
         });
     }
