@@ -8,7 +8,7 @@ import * as net from 'net';
 import { Server } from 'net';
 import { randomUUID } from 'crypto';
 import archiver from 'archiver';
-import { tmpdir } from 'os';
+import { platform, tmpdir } from 'os';
 
 
 export class VoiceRecorder {
@@ -325,8 +325,14 @@ export class VoiceRecorder {
     }
 
     private serveStream(stream: ReplayReadable, startRecordTime: number, endTimeMs: number): SocketServerConfig {
-        const socketPath = resolve(VoiceRecorder.tempPath, randomUUID() + '.sock');
-        const url = 'unix:' + socketPath;
+        let socketPath: string, url: string;
+
+        if(platform() === 'win32') {
+            socketPath = url = `\\\\.\\pipe\\${randomUUID()}`;
+        } else {
+            socketPath = resolve(VoiceRecorder.tempPath, `${randomUUID()}.sock`);
+            url = `unix:${socketPath}`;
+        }
         const server = net.createServer((socket) => stream.rewind(startRecordTime, endTimeMs).pipe(socket));
         server.listen(socketPath);
         // complex filters are probably reading the files several times. Therefore, the server can't be closed after the stream is read.

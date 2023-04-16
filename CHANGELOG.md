@@ -1,3 +1,6 @@
+# 1.0.4
+- Fix: Changed how user streams are served/merged during the ffmpeg process in Windows.
+
 # 1.0.3
 - Fix: There was a Windows permission error because an invalid temp path was taken.
 
