@@ -8,11 +8,13 @@ import * as net from 'net';
 import { Server } from 'net';
 import { randomUUID } from 'crypto';
 import archiver from 'archiver';
+import { tmpdir } from 'os';
 
 
 export class VoiceRecorder {
     private readonly options: RecordOptions;
     private static readonly PCM_FORMAT = 's16le';
+    private static readonly tempPath = tmpdir();
     private writeStreams: Record<string, {
         userStreams: UserStreams,
         listener: (userId: string) => void;
@@ -323,7 +325,7 @@ export class VoiceRecorder {
     }
 
     private serveStream(stream: ReplayReadable, startRecordTime: number, endTimeMs: number): SocketServerConfig {
-        const socketPath = resolve('/tmp/', randomUUID() + '.sock');
+        const socketPath = resolve(VoiceRecorder.tempPath, randomUUID() + '.sock');
         const url = 'unix:' + socketPath;
         const server = net.createServer((socket) => stream.rewind(startRecordTime, endTimeMs).pipe(socket));
         server.listen(socketPath);

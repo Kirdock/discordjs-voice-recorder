@@ -1,3 +1,6 @@
+# 1.0.3
+- Fix: There was a Windows permission error because an invalid temp path was taken.
+
 # 1.0.2
 - I'm just testing something here.
 
