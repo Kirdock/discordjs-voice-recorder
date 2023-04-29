@@ -2,10 +2,10 @@
 Voice recorder or more like a replay buffer for discord.js. Base functionality is "save last x minutes".
 The output format can be determined to just be a single `.mp3` file or a `.zip` file that contains one audio track per user.
 
+[![npm version](https://img.shields.io/npm/v/%40kirdock%2Fdiscordjs-voice-recorder)](https://www.npmjs.com/package/@kirdock/discordjs-voice-recorder)
+
 ## Difference to other voice recording solutions
 You get the track as you would hear it in the voice channel. Not just the chunks when someone is talking. The time when someone is not speaking is added.
-
-[![npm version](https://img.shields.io/npm/v/%40kirdock%2Fdiscordjs-voice-recorder)](https://www.npmjs.com/package/@kirdock/discordjs-voice-recorder)
 
 ## Requirements
 - `ffmpeg` has to be installed
