@@ -54,23 +54,3 @@ Problems are
 2. We don't have the delay when a user stops and starts speaking again.
 
 => We have to manually sync the user streams and manually add the delays when a user is speaking.
-
-
-## Overview for calculation of skip time and delay time
-```
-startRecordTime = endTime - (minutes /*record last x minutes*/) * 60 * 1000;
-
-------|----------------------|----------------|-------------------------------|-------
-------|----------------------|----------------|-------------------------------|-------
-     user1 Start      startRecordTime    user2 Start                        endTime
-      |<-----skipTime------->|<---delayTime-->|
-
- delayTime = userStartTime - startRecordTime  // valid if > 0
- skipTime = startRecordTime - userStartTime   // valid if > 0
-
-each delay when user is silent:
-  startTimeOfChunk = Date.now() - chunkTime;
-  silentTimeMs = endDateOfLatestChunk - startTimeOfChunk;
-  
-  split into chunks with same length.
-```
