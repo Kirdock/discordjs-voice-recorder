@@ -44,6 +44,9 @@ await voiceRecorder.getRecordedVoice(yourWriteStream, guildId, 'single', 5, {['1
 voiceRecorder.stopRecording(myVoiceConnection);
 ```
 
+# Implementation example
+https://github.com/Kirdock/recordy
+
 ## Why is voice recording with discord.js such a big pain?
 Because Discord just provides audio chunks (20ms per chunk I guess) when a user is speaking.
 Problems are
