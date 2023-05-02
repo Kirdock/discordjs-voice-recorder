@@ -9,11 +9,10 @@ You get the track as you would hear it in the voice channel. It's not just the c
 
 ## Requirements
 - `ffmpeg` has to be installed
-- `@discordjs/opus` has to be installed. Run `npm install @discordjs/opus` or `yarn add @discordjs/opus` to install the dependency.
 
 **Disclaimer**
 
-I suggest not using Windows (or just use WSL). Reason: `@discordjs/opus` is cumbersome to install.
+I suggest not using Windows (or just use WSL). Reason: `sodium` is cumbersome to install.
 
 ## How to install
 Simply run `npm install @kirdock/discordjs-voice-recorder` or `yarn add @kirdock/discordjs-voice-recorder`
