@@ -20,6 +20,8 @@
     "lint:fix": "eslint --fix ./"
   },
   "dependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "@discordjs/voice": "^0.16.0",
     "archiver": "^5.3.1",
     "fluent-ffmpeg": "^2.1.2"
   },
@@ -32,9 +34,5 @@
     "eslint": "^8.35.0",
     "eslint-config-prettier": "^8.7.0",
     "typescript": "^4.5.4"
-  },
-  "peerDependencies": {
-    "@discordjs/opus": "^0.9.0",
-    "@discordjs/voice": "^0.16.0"
   }
 }
