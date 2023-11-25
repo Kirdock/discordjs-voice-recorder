@@ -29,7 +29,7 @@ export class VoiceRecorder {
     constructor(options: Partial<RecordOptions> = {}, private discordClient?: DiscordClientInterface) {
         this.options = {
             maxUserRecordingLength: (options.maxUserRecordingLength ?? 100) * 1_024 * 1_024,
-            maxRecordTimeMs: options.maxRecordTimeMs ?? 10 * 60 * 1_000,
+            maxRecordTimeMinutes: (options.maxRecordTimeMinutes ?? 10) * 60 * 1_000,
             sampleRate: (options.sampleRate ?? 16_000),
             channelCount: (options.channelCount ?? 2)
         };
@@ -61,14 +61,14 @@ export class VoiceRecorder {
             return;
         }
 
-        const recordStream = new ReplayReadable(this.options.maxRecordTimeMs, this.options.sampleRate, this.options.channelCount, ()=>  connection.receiver.speaking.users.get(userId), {
+        const recordStream = new ReplayReadable(this.options.maxRecordTimeMinutes, this.options.sampleRate, this.options.channelCount, ()=>  connection.receiver.speaking.users.get(userId), {
             highWaterMark: this.options.maxUserRecordingLength,
             length: this.options.maxUserRecordingLength
         });
         const opusStream = connection.receiver.subscribe(userId, {
             end: {
                 behavior: EndBehaviorType.AfterSilence,
-                duration: this.options.maxRecordTimeMs,
+                duration: this.options.maxRecordTimeMinutes,
             },
         });
 
@@ -137,7 +137,7 @@ export class VoiceRecorder {
             return false;
         }
 
-        const recordDurationMs = Math.min(Math.abs(minutes) * 60 * 1_000, this.options.maxRecordTimeMs);
+        const recordDurationMs = Math.min(Math.abs(minutes) * 60 * 1_000, this.options.maxRecordTimeMinutes);
         const endTimeMs = Date.now();
         const maxRecordTime = endTimeMs - recordDurationMs;
         const startRecordTime = Math.max(minStartTimeMs, maxRecordTime);

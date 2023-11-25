@@ -14,7 +14,7 @@ export type RecordOptions = {
     /**
      * Keep last x minutes for recording. Older voice chunks will be deleted. Default 10.
      */
-    maxRecordTimeMs: number;
+    maxRecordTimeMinutes: number;
     /**
      * Target sample rate of the recorded stream. Default 16,000.
      */

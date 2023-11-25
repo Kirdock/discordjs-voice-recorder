@@ -1,3 +1,6 @@
+# 1.0.6
+- Fix: Renamed `maxRecordTimeMs` to `maxRecordTimeMinutes` and accept minutes instead of ms.
+
 # 1.0.5
 - Fix: `maxRecordTimeMs` was actually taken as minutes instead of ms.
 - Doc: The description for the record time and length were switched.
