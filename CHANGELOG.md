@@ -1,3 +1,7 @@
+# 1.0.5
+- Fix: `maxRecordTimeMs` was actually taken as minutes instead of ms.
+- Doc: The description for the record time and length were switched.
+
 # 1.0.4
 - Fix: Changed how user streams are served/merged during the ffmpeg process in Windows.
 
