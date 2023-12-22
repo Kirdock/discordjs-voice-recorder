@@ -35,6 +35,18 @@ export class VoiceRecorder {
         };
     }
 
+
+    /**
+     * Checks if the recording is currently in progress. Optionally a guild id can be provided to check if a recording is running on a certain guild.
+     * @param guildId
+     */
+    public isRecording(guildId?: string): boolean {
+        if(guildId) {
+            return !!this.writeStreams[guildId];
+        }
+        return !!Object.keys(this.writeStreams).length;
+    }
+
     public startRecording(connection: VoiceConnection): void {
         const guildId = connection.joinConfig.guildId;
         if (this.writeStreams[guildId]) {
