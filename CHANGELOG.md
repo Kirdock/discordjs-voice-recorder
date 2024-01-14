@@ -1,3 +1,6 @@
+# 1.1.0
+- Feat: Introduced the `voiceRecorder.isRecording()` function to check if the voice recording is currently running or running on a specific guild.
+
 # 1.0.6
 - Fix: Renamed `maxRecordTimeMs` to `maxRecordTimeMinutes` and accept minutes instead of ms.
 
