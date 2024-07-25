@@ -1,3 +1,6 @@
+# 1.1.1
+- Chore: Allow more `@discordjs/voice` versions.
+
 # 1.1.0
 - Feat: Introduced the `voiceRecorder.isRecording()` function to check if the voice recording is currently running or running on a specific guild.
 
