@@ -1,7 +1,7 @@
-import { OpusEncoder } from '@discordjs/opus';
+import opus from '@discordjs/opus';
 import { Readable, Writable, WritableOptions } from 'stream';
-import { getChunkTimeMs, getLastStopTime, secondsToBuffer, syncStream } from '../utils/replay-readable.utils';
-import { BufferArrayElement, ChunkArrayItem, EncodingOptions, ReadWriteOptions } from '../models/types';
+import { getChunkTimeMs, getLastStopTime, secondsToBuffer, syncStream } from '../utils/replay-readable.utils.js';
+import { BufferArrayElement, ChunkArrayItem, EncodingOptions, ReadWriteOptions } from '../models/types.js';
 import Timeout = NodeJS.Timeout;
 
 export class ReplayReadable extends Writable {
@@ -11,7 +11,7 @@ export class ReplayReadable extends Writable {
     private readonly _readableOptions: ReadWriteOptions;
     private _waiting: ((error?: Error | null) => void) | null;
     private readonly fadeOutInterval: Timeout;
-    private readonly _encoder: OpusEncoder;
+    private readonly _encoder: opus.OpusEncoder;
     private readonly encodingOptions: EncodingOptions;
     private _startTimeOfNextChunk?: number;
     private _startTimeOfChunkBefore?: number;
@@ -37,7 +37,7 @@ export class ReplayReadable extends Writable {
         const chunkTimeMs = 20;
         const bytesPerElement = 2; // buffer is Uint8Array but the data inside is PCM 16-bit
         this._readableOptions = adjustedOptions;
-        this._encoder = new OpusEncoder(sampleRate, numChannels);
+        this._encoder = new opus.OpusEncoder(sampleRate, numChannels);
         this.encodingOptions = {
             numChannels,
             sampleRate,

@@ -1,6 +1,6 @@
 import type { AudioReceiveStream } from '@discordjs/voice';
 import { Server } from 'net';
-import { ReplayReadable } from '../src/replay-readable';
+import { ReplayReadable } from '../src/replay-readable.js';
 import { WritableOptions } from 'stream';
 
 export type ReadWriteOptions = { length?: number } & WritableOptions;

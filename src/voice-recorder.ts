@@ -2,13 +2,13 @@ import type { VoiceConnection } from '@discordjs/voice';
 import { AudioReceiveStream, EndBehaviorType } from '@discordjs/voice';
 import ffmpeg, { FfmpegCommand, FilterSpecification } from 'fluent-ffmpeg';
 import { resolve } from 'path';
-import { ReplayReadable } from './replay-readable';
-import { AudioExportType, DiscordClientInterface, RecordOptions, SocketServerConfig, UserStreams, UserVolumesDict } from '../models/types';
+import { ReplayReadable } from './replay-readable.js';
+import { AudioExportType, DiscordClientInterface, RecordOptions, SocketServerConfig, UserStreams, UserVolumesDict } from '../models/types.js';
 import { PassThrough, Readable, Writable } from 'stream';
 import * as net from 'net';
 import { Server } from 'net';
 import { randomUUID } from 'crypto';
-import archiver from 'archiver';
+import {ZipArchive } from 'archiver';
 import { platform, tmpdir } from 'os';
 
 
@@ -219,7 +219,7 @@ export class VoiceRecorder {
     }
 
     private async generateSplitRecording(userStreams: UserStreams, startRecordTime: number, endTime: number, writeStream: Writable, userVolumes?: UserVolumesDict): Promise<boolean> {
-        const archive = archiver('zip');
+        const archive = new ZipArchive();
         const userIds = Object.keys(userStreams);
         if (!userIds.length) {
             return false;

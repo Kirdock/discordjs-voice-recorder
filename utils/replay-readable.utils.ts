@@ -1,4 +1,4 @@
-import { BufferArrayElement, EncodingOptions } from '../models/types';
+import { BufferArrayElement, EncodingOptions } from '../models/types.js';
 
 export function addSilentTime(bufArr: BufferArrayElement[], timeMs: number, encoding: BufferEncoding, options: EncodingOptions): void {
     let endTimeBefore = getLastStopTime(bufArr);
