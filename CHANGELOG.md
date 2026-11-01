@@ -1,3 +1,6 @@
+# 1.2
+- Breaking change: ESM only
+
 # 1.1.1
 - Chore: Allow more `@discordjs/voice` versions.
 
